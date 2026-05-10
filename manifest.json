@@ -1,21 +1,68 @@
 {
-  "name": "Stundenplan & Lernbüros",
+  "id": "/stundenplan-lb-app/",
+  "name": "Stundenplan",
   "short_name": "Stundenplan",
-  "description": "PWA für Stundenplan mit Untis und Lernbüro-Verwaltung",
+  "description": "Dein Stundenplan mit Lernbüro-Tracking",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#1a1a2e",
-  "theme_color": "#6c63ff",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "background_color": "#f2f2f7",
+  "theme_color": "#f2f2f7",
+  "orientation": "natural",
+  "lang": "de",
+  "dir": "ltr",
+  "categories": ["education", "productivity"],
+  "prefer_related_applications": false,
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "icon-512.png",
+      "src": "/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Stundenplan Wochenansicht"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Stundenplan auf Tablet"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Diese Woche",
+      "short_name": "Woche",
+      "description": "Aktuelle Schulwoche öffnen",
+      "url": "/",
+      "icons": [{"src": "/icon-192.png", "sizes": "192x192"}]
     }
   ]
 }

@@ -2,181 +2,160 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Stundenplan</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#6c63ff" media="(prefers-color-scheme: dark)">
-  <meta name="theme-color" content="#f0f2f5" media="(prefers-color-scheme: light)">
+
+  <!-- Viewport: kein user-scale-no damit iOS Zoom nicht bricht -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+  <!-- PWA Meta – iOS/iPadOS -->
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Stundenplan">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <!-- Android / Chrome -->
+  <meta name="theme-color" content="#f2f2f7" id="themeColor" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#1c1c1e" media="(prefers-color-scheme: dark)">
+
+  <!-- SEO / Share -->
+  <meta name="description" content="Dein Stundenplan mit Lernbüro-Tracking">
+  <meta name="robots" content="noindex">
+
+  <!-- Performance: DNS prefetch & preconnect für externe Ressourcen -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+
+  <!-- PWA Manifest & Icons -->
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icon-192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+
+  <!-- iOS Splash Screens (verhindert weißes Aufblitzen) -->
+  <!-- iPhone 15 Pro Max -->
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/icon-512.png">
+  <!-- iPhone 15 / 14 Pro -->
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/icon-512.png">
+  <!-- iPhone SE / 8 -->
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/icon-512.png">
+  <!-- iPad Pro 12.9" -->
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/icon-512.png">
+  <!-- iPad 10.9" -->
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/icon-512.png">
+
+  <title>Stundenplan</title>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+
+  <!-- Externe Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+
+  <!-- App CSS -->
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
 
-<!-- TOP BAR -->
-<div class="topbar">
-  <div class="topbar-left">
-    <span class="topbar-logo">Stundenplan</span>
+<!-- Safe-area wrapper für iPhone Notch / Dynamic Island / Android Nav-Bar -->
+<div class="safe-wrap">
+
+  <div class="ctn" id="mainCtn">
+    <div class="hdr">
+      <div></div>
+      <div class="wnav">
+        <button class="wb" onclick="chW(-1)">&#9664;</button>
+        <span id="wd" onclick="openDatePicker()" style="cursor:pointer;-webkit-tap-highlight-color:transparent">KW 6, 2026</span>
+        <button class="wb" onclick="chW(1)">&#9654;</button>
+      </div>
+      <button class="gear-btn" onclick="openSheet('setM')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+      </button>
+    </div>
+    <div class="eban" id="eb">Bearbeitungsmodus aktiv</div>
+    <div class="trkr" id="trkr"></div>
+    <div class="swipe-wrap" id="swipeWrap">
+      <div class="swipe-inner" id="swipeInner">
+        <div class="swipe-page" id="pagePrev"></div>
+        <div class="swipe-page" id="pageCur"></div>
+        <div class="swipe-page" id="pageNext"></div>
+      </div>
+    </div>
   </div>
-  <div class="kw-nav" id="kw-nav" style="display:none">
-    <button class="kw-btn" id="prev-week">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
-    </button>
-    <span class="kw-label" id="week-label"></span>
-    <button class="kw-btn" id="next-week">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
-    </button>
-  </div>
-  <div class="topbar-right">
-    <button class="icon-btn" id="settings-btn" title="Einstellungen">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-        <circle cx="12" cy="12" r="3"/>
-        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-      </svg>
-    </button>
-  </div>
+
+</div><!-- /safe-wrap -->
+
+<!-- QR Fullscreen -->
+<div class="qr-full" id="qrFull">
+  <button class="qr-full-close" onclick="document.getElementById('qrFull').classList.remove('vis')">&#10005;</button>
+  <div class="qr-full-canvas" id="qrFullCanvas"></div>
+  <div class="qr-full-label" id="qrFullLabel"></div>
 </div>
 
-<main>
-
-  <!-- HEUTE -->
-  <div class="page active" id="page-today">
-    <div class="today-header">
-      <h2 id="today-heading">Heute</h2>
-      <p id="today-sub"></p>
-    </div>
-    <!-- Bubble bar -->
-    <div class="bubble-bar" id="today-bubbles"></div>
-    <div class="today-list" id="today-list">
-      <p style="color:var(--text-muted);padding:20px 0">Kein Stundenplan geladen. Einstellungen → Demo laden oder Untis verbinden.</p>
-    </div>
+<!-- Kamera Overlay -->
+<div class="cam-overlay" id="camOv">
+  <div class="cam-top">
+    <span class="cam-label">QR-Code scannen</span>
+    <button class="cam-close" onclick="stopCam()">&#10005;</button>
   </div>
-
-  <!-- WOCHE -->
-  <div class="page" id="page-week">
-    <!-- Bubble bar -->
-    <div class="bubble-bar" id="week-bubbles"></div>
-    <div class="tt-wrapper">
-      <div class="tt-grid" id="tt-grid"></div>
-    </div>
-  </div>
-
-  <!-- LERNBÜROS -->
-  <div class="page" id="page-lb">
-    <div class="page-title">Lernbüros</div>
-
-    <div class="settings-group">
-      <div class="settings-title">PDF importieren</div>
-      <div class="upload-zone" id="pdf-upload-zone">
-        <div class="upload-zone-icon">📄</div>
-        <p>Lernbüroplan als PDF hierher ziehen oder antippen</p>
-        <input type="file" accept=".pdf" id="pdf-input" style="display:none">
-      </div>
-      <div id="pdf-preview" style="margin-top:10px;display:none">
-        <p id="pdf-status" style="font-size:.85rem;padding:6px 0"></p>
-        <div id="pdf-parsed-preview"></div>
-        <button class="btn success" style="margin-top:10px" id="pdf-import-btn">✅ Importieren</button>
-      </div>
-    </div>
-
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-      <div class="settings-title" style="margin:0">Einträge</div>
-      <button class="btn" style="width:auto;padding:7px 14px;font-size:.8rem" id="lb-add-btn">+ Hinzufügen</button>
-    </div>
-    <div id="lb-entries-list"></div>
-  </div>
-
-  <!-- EINSTELLUNGEN -->
-  <div class="page" id="page-settings">
-    <div class="page-title">Einstellungen</div>
-
-    <div class="settings-group">
-      <div class="settings-title">Untis</div>
-      <div class="settings-card">
-        <div class="form-group"><label>Server URL</label><input type="url" id="untis-url" placeholder="https://mese.webuntis.com"></div>
-        <div class="form-group"><label>Schule (Kurzname)</label><input type="text" id="untis-school" placeholder="bk-duesseldorf"></div>
-        <div class="form-group"><label>Benutzername</label><input type="text" id="untis-user"></div>
-        <div class="form-group"><label>Passwort</label><input type="password" id="untis-pass"></div>
-        <div class="form-group"><label>Klassen (z.B. EF,Q1,Q2,OS_LB)</label><input type="text" id="untis-classes" placeholder="EF,Q1,Q2,OS_LB"></div>
-        <div class="form-group"><button class="btn" id="untis-connect-btn">🔄 Verbinden</button></div>
-        <div class="form-group" style="border:none"><p id="untis-status" style="font-size:.8rem;color:var(--text-muted)"></p></div>
-      </div>
-    </div>
-
-    <div class="settings-group">
-      <div class="settings-title">Demo</div>
-      <div class="settings-card">
-        <div class="settings-row">
-          <div><div class="settings-row-label">Demo-Daten laden</div><div class="settings-row-desc">Beispiel-Stundenplan für Tests</div></div>
-          <div class="settings-row-right"><button class="btn secondary" style="width:auto;padding:7px 14px" id="demo-btn">Laden</button></div>
-        </div>
-        <div class="settings-row">
-          <div><div class="settings-row-label">Alles zurücksetzen</div><div class="settings-row-desc">Löscht alle gespeicherten Daten</div></div>
-          <div class="settings-row-right"><button class="btn danger" style="width:auto;padding:7px 14px" id="reset-btn">Reset</button></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-</main>
-
-<!-- BOTTOM NAV -->
-<nav class="bottom-nav">
-  <button class="bnav-item active" data-page="today">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-    Heute
-  </button>
-  <button class="bnav-item" data-page="week">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="14" x2="16" y2="14"/></svg>
-    Woche
-  </button>
-  <button class="bnav-item" data-page="lb">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-    Lernbüros
-  </button>
-  <button class="bnav-item" data-page="settings">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-    Einst.
-  </button>
-</nav>
-
-<!-- LB AUSWAHL MODAL -->
-<div class="modal-overlay" id="lb-modal">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <h3 id="lb-modal-title"></h3>
-    <p class="modal-sub" id="lb-modal-sub"></p>
-    <div id="lb-modal-options"></div>
-    <button class="modal-cancel-btn" id="lb-modal-cancel" style="display:none">Buchung aufheben</button>
-  </div>
+  <video id="camV" autoplay playsinline></video>
+  <div class="cam-frame"></div>
+  <canvas id="camC" style="display:none"></canvas>
 </div>
 
-<!-- ADD LB MODAL -->
-<div class="modal-overlay" id="add-lb-modal">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <h3 style="margin-bottom:14px">Lernbüro hinzufügen</h3>
-    <div class="settings-card">
-      <div class="form-group">
-        <label>Tag</label>
-        <select id="lb-add-day">
-          <option value="0">Montag</option><option value="1">Dienstag</option>
-          <option value="2">Mittwoch</option><option value="3">Donnerstag</option>
-          <option value="4">Freitag</option>
-        </select>
-      </div>
-      <div class="form-group"><label>Stunde (1–10)</label><input type="text" id="lb-add-period" placeholder="3"></div>
-      <div class="form-group"><label>Fach-Kürzel</label><input type="text" id="lb-add-subject" placeholder="M"></div>
-      <div class="form-group"><label>Lehrer-Kürzel</label><input type="text" id="lb-add-teacher" placeholder="SSCH"></div>
-      <div class="form-group"><label>Raum</label><input type="text" id="lb-add-room" placeholder="O 2-02"></div>
-    </div>
-    <button class="btn" style="margin-top:12px" id="lb-add-save">Speichern</button>
-    <button class="modal-cancel-btn" id="add-lb-close" style="display:block">Abbrechen</button>
-  </div>
-</div>
+<!-- Modal: Info -->
+<div class="mo" id="infoM"><div class="mo-bg" onclick="closeSheet('infoM')"></div><div class="mc"><div class="mc-head"><div class="shh"></div><div class="mhr"><h2 class="mtl" id="infoTitle"></h2><button class="mx" onclick="closeSheet('infoM')">&#10005;</button></div></div><div class="mc-body"><div class="info-card"><div class="info-subj" id="infoSubj"></div><div class="info-type" id="infoType">Fachstunde</div><div class="info-row"><div><div class="info-label">Lehrer</div><div class="info-val" id="infoTeach"></div></div><div><div class="info-label">Raum</div><div class="info-val" id="infoRoom"></div></div></div></div><button class="sbtn sbtn-danger" onclick="entfallen()">Stunde entfällt</button></div></div></div>
 
-<div class="toast" id="toast"></div>
+<!-- Modal: Pick -->
+<div class="mo" id="pickM"><div class="mo-bg" onclick="closeSheet('pickM')"></div><div class="mc"><div class="mc-head"><div class="shh"></div><div class="mhr"><h2 class="mtl" id="pTtl"></h2><button class="mx" onclick="closeSheet('pickM')">&#10005;</button></div></div><div class="mc-body"><div id="pickList"></div><div class="pick-undo" id="pickUndo" style="display:none">Entfall rückgängig</div></div></div></div>
 
-<script src="app.js"></script>
+<!-- Modal: Edit -->
+<div class="mo" id="editM"><div class="mo-bg" onclick="closeSheet('editM')"></div><div class="mc"><div class="mc-head"><div class="shh"></div><div class="mhr"><h2 class="mtl" id="eT"></h2><button class="mx" onclick="closeSheet('editM')">&#10005;</button></div></div><div class="mc-body"><div class="tabs"><button class="tab on" id="tF" onclick="sTab('f')">Fachstunde</button><button class="tab" id="tL" onclick="sTab('l')">Lernbüros</button></div><div class="tpn on" id="pF"><div class="cf"><div><label class="cl">Fach</label><input class="ci" id="iF" placeholder="M, D, E…"></div><div><label class="cl">Lehrer</label><input class="ci" id="iL" placeholder="SGEU"></div><div class="fw"><label class="cl">Raum</label><input class="ci" id="iR" placeholder="O 1-01"></div></div><button class="sbtn" onclick="saveF()">Speichern</button></div><div class="tpn" id="pL"><p style="font-size:10px;color:var(--mm);margin-bottom:6px">Lernbüro-Angebote für diese Stunde.</p><button class="scan-btn" id="lbScanBtn" style="margin-bottom:8px;border-style:solid;border-color:var(--ib)" onclick="startLBScan()">📷 Bild von Lernbüro-Plan auswählen</button><div class="cf"><div><label class="cl">Fach</label><input class="ci" id="ilF" placeholder="D, M, IF…"></div><div><label class="cl">Lehrer</label><input class="ci" id="ilL" placeholder="JDIR"></div><div class="fw"><label class="cl">Raum</label><input class="ci" id="ilR" placeholder="O 1-13"></div></div><button class="sbtn" onclick="addLBE()">Hinzufügen</button><div class="lb-list-edit"><div class="lbl-title">Angebote</div><div id="lbEnt"></div></div></div></div></div></div>
+
+<!-- Modal: Einstellungen -->
+<div class="mo" id="setM"><div class="mo-bg" onclick="closeSheet('setM')"></div><div class="mc"><div class="mc-head"><div class="shh"></div><div class="mhr"><h2 class="mtl">Einstellungen</h2><button class="mx" onclick="closeSheet('setM')">&#10005;</button></div></div><div class="mc-body">
+<div class="s-group"><div class="s-row" onclick="togEdit()"><div class="s-row-info"><div class="s-row-label">Bearbeitungsmodus</div><div class="s-row-desc">Fachstunden & Lernbüros verwalten</div></div><div class="s-tog orange" id="editTog"></div></div><div class="s-row" onclick="togSwipe()"><div class="s-row-info"><div class="s-row-label">Wischen</div><div class="s-row-desc">Links/rechts für Wochenwechsel</div></div><div class="s-tog" id="swipeTog"></div></div></div>
+<div class="stl">Lernbüro-Tracking</div><div class="s-group" id="lbCfgOn"></div><div id="lbCfgOffWrap" style="display:none"><div class="stl" style="color:var(--tm);font-size:9px;margin-top:10px">Weitere Fächer</div><div class="s-group" id="lbCfgOff"></div></div>
+<div class="s-group" style="margin-top:6px"><div class="s-row" onclick="openManageSubjects()"><div class="s-row-info"><div class="s-row-label">Fächer verwalten</div><div class="s-row-desc">Fächer aus dem Tracking löschen</div></div><div style="color:var(--mm);font-size:14px">›</div></div></div>
+<div class="stl">Lernbüro-Plan importieren</div><div class="s-group"><div class="s-row" onclick="openBulkImport()"><div class="s-row-info"><div class="s-row-label">LB-Plan einlesen</div><div class="s-row-desc">PDF oder Foto vom gesamten Plan</div></div><div style="color:var(--mm);font-size:14px">›</div></div></div>
+<div class="stl">Teilen</div><div class="s-group"><div class="s-row" onclick="togQRSection()"><div class="s-row-info"><div class="s-row-label">QR-Code & Teilen</div><div class="s-row-desc">Plan als Code teilen oder importieren</div></div><div style="color:var(--mm);font-size:14px;transition:transform .2s" id="qrChev">›</div></div></div><div id="qrWrap"><div class="qr-section"><div class="qr-tabs"><div class="qr-tab on" id="qrTabAll" onclick="setQR('all')">Kompletter Plan</div><div class="qr-tab" id="qrTabLB" onclick="setQR('lb')">Nur Lernbüros</div></div><div class="qr-box"><div class="qr-canvas" id="qrCanvas" onclick="showQRFull()"></div><div class="qr-hint" id="qrHint">Antippen zum Vergrößern</div><div class="share-size" id="shareSize"></div></div><div class="qr-code-text" id="qrText" onclick="copyQR()"></div></div>
+<div class="stl" style="margin-top:8px">Importieren</div><div class="scan-section"><button class="scan-btn" onclick="startCam()">QR-Code scannen</button><div class="scan-or">oder</div><div class="paste-row"><input class="scan-input" id="scanInput" placeholder="Code einfügen…"><button class="paste-btn" onclick="doPaste()">Einfügen</button></div><button class="sbtn" style="margin-top:4px" onclick="importCode()">Importieren</button></div></div>
+<div class="stl">Darstellung</div><div class="s-group"><div class="s-row" onclick="togTimes()"><div class="s-row-info"><div class="s-row-label">Uhrzeiten anzeigen</div><div class="s-row-desc">Start- und Endzeit links</div></div><div class="s-tog" id="timesTog"></div></div><div class="s-row" onclick="togFill()"><div class="s-row-info"><div class="s-row-label">Fächer einfärben</div><div class="s-row-desc">Ganzes Feld in Fachfarbe</div></div><div class="s-tog" id="fillTog"></div></div><div class="s-row" onclick="togTeacher()"><div class="s-row-info"><div class="s-row-label">Lehrer anzeigen</div><div class="s-row-desc">Lehrerkürzel in Fachstunden</div></div><div class="s-tog" id="teacherTog"></div></div><div class="s-row" onclick="togRoom()"><div class="s-row-info"><div class="s-row-label">Raum anzeigen</div><div class="s-row-desc">Raumnummer in Fachstunden</div></div><div class="s-tog" id="roomTog"></div></div><div class="s-row" onclick="openColorSettings()"><div class="s-row-info"><div class="s-row-label">Fachfarben anpassen</div><div class="s-row-desc">Farbe pro Fach ändern</div></div><div style="color:var(--mm);font-size:14px">›</div></div></div>
+<div class="stl">Stil <span style="font-size:7px;background:oklch(.55 .2 260);color:#fff;padding:1px 5px;border-radius:4px;margin-left:4px;vertical-align:middle;letter-spacing:0">BETA</span></div><div class="s-group"><div class="s-row" onclick="togDark()"><div class="s-row-info"><div class="s-row-label">Dark Mode</div><div class="s-row-desc">Dunkles Farbschema</div></div><div class="s-tog" id="darkTog"></div></div><div id="styleGrid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding:10px 12px"></div></div>
+<div class="stl">Entwickler</div><div class="s-group"><div style="padding:10px 12px"><div style="font-size:10px;color:var(--mm);margin-bottom:6px">Entwicklercode für erweiterte Funktionen</div><div class="paste-row"><input class="scan-input" id="devCodeInput" placeholder="Code eingeben…" type="password" style="font-family:'JetBrains Mono',monospace"><button class="paste-btn" onclick="saveDevCode()">OK</button></div><div id="devStatus" style="font-size:9px;margin-top:4px"></div></div></div>
+<div class="stl">Daten</div><div class="s-group"><div class="s-row" onclick="resetENT()"><div class="s-row-info"><div class="s-row-label">Entfall zurücksetzen</div><div class="s-row-desc">Alle Entfall-Markierungen dieser Woche löschen</div></div></div><div class="s-row" onclick="confirmReset()"><div class="s-row-info"><div class="s-row-label" style="color:oklch(.63 .26 29)">Alle Daten löschen</div><div class="s-row-desc">Gesamten Stundenplan zurücksetzen</div></div></div></div>
+<div style="text-align:center;padding:16px 0 8px"><div style="font-size:9px;color:var(--tm2);font-weight:600">LB-Plan v60</div></div>
+<div style="height:env(safe-area-inset-bottom,16px)"></div>
+</div></div></div>
+
+<!-- Modal: Farben -->
+<div class="mo" id="colorM"><div class="mo-bg" onclick="closeSheet('colorM')"></div><div class="mc"><div class="mc-head"><div class="shh"></div><div class="mhr"><h2 class="mtl" id="colorMTitle">Fachfarben</h2><button class="mx" onclick="closeSheet('colorM')">&#10005;</button></div></div><div class="mc-body"><div id="colorList"></div><div id="colorShareSection" style="display:none;margin-top:14px;padding-top:10px;border-top:1px solid var(--ib)"><div style="font-size:10px;font-weight:700;color:var(--mm);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Farben teilen</div><div class="qr-code-text" id="colorCode" onclick="copyColorCode()" style="margin-bottom:6px"></div><div class="paste-row"><input class="scan-input" id="colorImportInput" placeholder="Farbcode einfügen…"><button class="paste-btn" onclick="doColorImport()">Laden</button></div></div></div></div></div>
+
+<!-- Modal: Fächer verwalten -->
+<div class="mo" id="manageM"><div class="mo-bg" onclick="closeSheet('manageM')"></div><div class="mc"><div class="mc-head"><div class="shh"></div><div class="mhr"><h2 class="mtl">Fächer verwalten</h2><button class="mx" onclick="closeSheet('manageM')">&#10005;</button></div></div><div class="mc-body"><p style="font-size:10px;color:var(--mm);margin-bottom:10px">Fächer aus dem Tracking entfernen. Das Fach wird nicht aus dem Stundenplan gelöscht.</p><div id="manageList"></div></div></div></div>
+
+<!-- Modal: Datepicker -->
+<div class="mo" id="dateM"><div class="mo-bg" onclick="closeSheet('dateM')"></div><div class="mc"><div class="mc-head"><div class="shh"></div><div class="mhr"><h2 class="mtl">Woche wählen</h2><button class="mx" onclick="closeSheet('dateM')">&#10005;</button></div></div><div class="mc-body"><div style="display:flex;gap:10px;justify-content:center;align-items:center;padding:10px 0 16px"><div style="display:flex;flex-direction:column;align-items:center;gap:4px"><button class="wb" onclick="dpAdj('w',1)" style="width:36px;height:28px">▲</button><div class="dp-val" id="dpW" style="font-size:28px;font-weight:800;font-family:'JetBrains Mono',monospace;min-width:60px;text-align:center;color:var(--tp)"></div><div style="font-size:9px;color:var(--mm);font-weight:600">WOCHE</div><button class="wb" onclick="dpAdj('w',-1)" style="width:36px;height:28px">▼</button></div><div style="font-size:20px;color:var(--mm);font-weight:300;padding-bottom:18px">,</div><div style="display:flex;flex-direction:column;align-items:center;gap:4px"><button class="wb" onclick="dpAdj('y',1)" style="width:36px;height:28px">▲</button><div class="dp-val" id="dpY" style="font-size:28px;font-weight:800;font-family:'JetBrains Mono',monospace;min-width:70px;text-align:center;color:var(--tp)"></div><div style="font-size:9px;color:var(--mm);font-weight:600">JAHR</div><button class="wb" onclick="dpAdj('y',-1)" style="width:36px;height:28px">▼</button></div></div><button class="sbtn" onclick="dpGo()">Woche anzeigen</button><button class="sbtn" style="background:var(--mi);color:var(--tp);margin-top:6px" onclick="dpToday()">📅 Aktuelle Woche</button></div></div></div>
+
+<!-- File Inputs -->
+<input type="file" id="lbFileInput" accept="image/*" style="display:none" onchange="handleLBPhoto(this)">
+<input type="file" id="bulkImgInput" accept="image/*" style="display:none" onchange="handleBulkFile(this)">
+
+<!-- Modal: Bulk Import -->
+<div class="mo" id="bulkM"><div class="mo-bg" onclick="closeSheet('bulkM')"></div><div class="mc"><div class="mc-head"><div class="shh"></div><div class="mhr"><h2 class="mtl">LB-Plan importieren</h2><button class="mx" onclick="closeSheet('bulkM')">&#10005;</button></div></div><div class="mc-body"><div id="bulkPicker"><button class="sbtn" style="margin:0 0 12px" onclick="document.getElementById('bulkImgInput').click()">Bild auswählen</button><div id="bulkDrop" style="border:2px dashed var(--ib);border-radius:14px;padding:28px 16px;text-align:center;color:var(--mm);font-size:12px;font-weight:600;transition:border-color .2s,background .2s">PDF hierhin ziehen<div style="font-size:9px;font-weight:400;margin-top:4px;color:var(--tm)">Aus Eigene Dateien oder IServ auf dieses Feld ziehen</div></div></div><div id="bulkStatus" style="text-align:center;padding:16px;font-size:12px;color:var(--mm);display:none"></div><div id="bulkResults" style="max-height:50vh;overflow-y:auto"></div><div id="bulkActions" style="display:none"><button class="sbtn" onclick="applyBulkImport()">Komplett übernehmen</button><button class="sbtn" style="background:var(--mi);color:var(--tp);margin-top:6px" onclick="closeSheet('bulkM')">Abbrechen</button></div></div></div></div>
+
+<!-- Modal: LB Scan -->
+<div class="mo" id="lbScanM"><div class="mo-bg" onclick="closeSheet('lbScanM')"></div><div class="mc"><div class="mc-head"><div class="shh"></div><div class="mhr"><h2 class="mtl">Erkannte Lernbüros</h2><button class="mx" onclick="closeSheet('lbScanM')">&#10005;</button></div></div><div class="mc-body"><div id="lbScanStatus" style="text-align:center;padding:16px;font-size:12px;color:var(--mm)">Bild wird analysiert...</div><div id="lbScanResults"></div><button class="sbtn" id="lbScanSave" style="display:none" onclick="saveScanResults()">Alle hinzufügen</button></div></div></div>
+
+<script src="/app.js"></script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
+</script>
+
 </body>
 </html>
