@@ -2,63 +2,35 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-
-  <!-- Viewport: kein user-scale-no damit iOS Zoom nicht bricht -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-
-  <!-- PWA Meta – iOS/iPadOS -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Stundenplan">
   <meta name="mobile-web-app-capable" content="yes">
-
-  <!-- Android / Chrome -->
   <meta name="theme-color" content="#f2f2f7" id="themeColor" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#1c1c1e" media="(prefers-color-scheme: dark)">
-
-  <!-- SEO / Share -->
   <meta name="description" content="Dein Stundenplan mit Lernbüro-Tracking">
   <meta name="robots" content="noindex">
-
-  <!-- Performance: DNS prefetch & preconnect für externe Ressourcen -->
   <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
-
-  <!-- PWA Manifest & Icons -->
   <link rel="manifest" href="/manifest.json">
   <link rel="apple-touch-icon" sizes="180x180" href="/icon-192.png">
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
-
-  <!-- iOS Splash Screens (verhindert weißes Aufblitzen) -->
-  <!-- iPhone 15 Pro Max -->
   <link rel="apple-touch-startup-image" media="screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/icon-512.png">
-  <!-- iPhone 15 / 14 Pro -->
   <link rel="apple-touch-startup-image" media="screen and (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/icon-512.png">
-  <!-- iPhone SE / 8 -->
   <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/icon-512.png">
-  <!-- iPad Pro 12.9" -->
   <link rel="apple-touch-startup-image" media="screen and (device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/icon-512.png">
-  <!-- iPad 10.9" -->
   <link rel="apple-touch-startup-image" media="screen and (device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/icon-512.png">
-
   <title>Stundenplan</title>
-
-  <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
-
-  <!-- Externe Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
-
-  <!-- App CSS -->
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
 
-<!-- Safe-area wrapper für iPhone Notch / Dynamic Island / Android Nav-Bar -->
 <div class="safe-wrap">
-
   <div class="ctn" id="mainCtn">
     <div class="hdr">
       <div></div>
@@ -84,8 +56,7 @@
       </div>
     </div>
   </div>
-
-</div><!-- /safe-wrap -->
+</div>
 
 <!-- QR Fullscreen -->
 <div class="qr-full" id="qrFull">
@@ -117,6 +88,28 @@
 <!-- Modal: Einstellungen -->
 <div class="mo" id="setM"><div class="mo-bg" onclick="closeSheet('setM')"></div><div class="mc"><div class="mc-head"><div class="shh"></div><div class="mhr"><h2 class="mtl">Einstellungen</h2><button class="mx" onclick="closeSheet('setM')">&#10005;</button></div></div><div class="mc-body">
 <div class="s-group"><div class="s-row" onclick="togEdit()"><div class="s-row-info"><div class="s-row-label">Bearbeitungsmodus</div><div class="s-row-desc">Fachstunden & Lernbüros verwalten</div></div><div class="s-tog orange" id="editTog"></div></div><div class="s-row" onclick="togSwipe()"><div class="s-row-info"><div class="s-row-label">Wischen</div><div class="s-row-desc">Links/rechts für Wochenwechsel</div></div><div class="s-tog" id="swipeTog"></div></div></div>
+<!-- Cloud Sync -->
+<div class="stl">Cloud-Sync</div>
+<div class="s-group" id="cloudSection">
+  <div id="cloudLoggedOut">
+    <div style="padding:12px 14px">
+      <div style="font-size:11px;color:var(--mm);margin-bottom:10px">Stundenplan geräteübergreifend synchronisieren</div>
+      <button class="sbtn" style="margin-bottom:6px" onclick="closeSheet('setM');setTimeout(()=>openSheet('loginM'),300)">Anmelden / Registrieren</button>
+    </div>
+  </div>
+  <div id="cloudLoggedIn" style="display:none">
+    <div class="s-row" onclick="cloudSync()">
+      <div class="s-row-info"><div class="s-row-label">Jetzt synchronisieren</div><div class="s-row-desc" id="cloudSyncStatus">Tippen zum Sync</div></div>
+      <div style="color:var(--mm);font-size:14px">⟳</div>
+    </div>
+    <div class="s-row">
+      <div class="s-row-info"><div class="s-row-label">Angemeldet als</div><div class="s-row-desc" id="cloudUserEmail"></div></div>
+    </div>
+    <div class="s-row" onclick="cloudLogout()">
+      <div class="s-row-info"><div class="s-row-label" style="color:#ff3b30">Abmelden</div></div>
+    </div>
+  </div>
+</div>
 <div class="stl">Lernbüro-Tracking</div><div class="s-group" id="lbCfgOn"></div><div id="lbCfgOffWrap" style="display:none"><div class="stl" style="color:var(--tm);font-size:9px;margin-top:10px">Weitere Fächer</div><div class="s-group" id="lbCfgOff"></div></div>
 <div class="s-group" style="margin-top:6px"><div class="s-row" onclick="openManageSubjects()"><div class="s-row-info"><div class="s-row-label">Fächer verwalten</div><div class="s-row-desc">Fächer aus dem Tracking löschen</div></div><div style="color:var(--mm);font-size:14px">›</div></div></div>
 <div class="stl">Lernbüro-Plan importieren</div><div class="s-group"><div class="s-row" onclick="openBulkImport()"><div class="s-row-info"><div class="s-row-label">LB-Plan einlesen</div><div class="s-row-desc">PDF oder Foto vom gesamten Plan</div></div><div style="color:var(--mm);font-size:14px">›</div></div></div>
@@ -126,8 +119,34 @@
 <div class="stl">Stil <span style="font-size:7px;background:oklch(.55 .2 260);color:#fff;padding:1px 5px;border-radius:4px;margin-left:4px;vertical-align:middle;letter-spacing:0">BETA</span></div><div class="s-group"><div class="s-row" onclick="togDark()"><div class="s-row-info"><div class="s-row-label">Dark Mode</div><div class="s-row-desc">Dunkles Farbschema</div></div><div class="s-tog" id="darkTog"></div></div><div id="styleGrid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding:10px 12px"></div></div>
 <div class="stl">Entwickler</div><div class="s-group"><div style="padding:10px 12px"><div style="font-size:10px;color:var(--mm);margin-bottom:6px">Entwicklercode für erweiterte Funktionen</div><div class="paste-row"><input class="scan-input" id="devCodeInput" placeholder="Code eingeben…" type="password" style="font-family:'JetBrains Mono',monospace"><button class="paste-btn" onclick="saveDevCode()">OK</button></div><div id="devStatus" style="font-size:9px;margin-top:4px"></div></div></div>
 <div class="stl">Daten</div><div class="s-group"><div class="s-row" onclick="resetENT()"><div class="s-row-info"><div class="s-row-label">Entfall zurücksetzen</div><div class="s-row-desc">Alle Entfall-Markierungen dieser Woche löschen</div></div></div><div class="s-row" onclick="confirmReset()"><div class="s-row-info"><div class="s-row-label" style="color:oklch(.63 .26 29)">Alle Daten löschen</div><div class="s-row-desc">Gesamten Stundenplan zurücksetzen</div></div></div></div>
-<div style="text-align:center;padding:16px 0 8px"><div style="font-size:9px;color:var(--tm2);font-weight:600">LB-Plan v60</div></div>
+<div style="text-align:center;padding:16px 0 8px"><div style="font-size:9px;color:var(--tm2);font-weight:600">LB-Plan v61</div></div>
 <div style="height:env(safe-area-inset-bottom,16px)"></div>
+</div></div></div>
+
+<!-- Modal: Login / Register -->
+<div class="mo" id="loginM"><div class="mo-bg" onclick="closeSheet('loginM')"></div><div class="mc"><div class="mc-head"><div class="shh"></div><div class="mhr"><h2 class="mtl" id="loginTitle">Anmelden</h2><button class="mx" onclick="closeSheet('loginM')">&#10005;</button></div></div><div class="mc-body">
+  <div class="tabs" style="margin-bottom:16px">
+    <button class="tab on" id="tabLogin" onclick="switchAuthTab('login')">Anmelden</button>
+    <button class="tab" id="tabRegister" onclick="switchAuthTab('register')">Registrieren</button>
+  </div>
+  <div id="authLoginPanel">
+    <div class="cf">
+      <div><label class="cl">E-Mail</label><input class="ci" id="loginEmail" type="email" placeholder="deine@email.de" autocomplete="email"></div>
+      <div><label class="cl">Passwort</label><input class="ci" id="loginPass" type="password" placeholder="Passwort" autocomplete="current-password"></div>
+    </div>
+    <div id="loginErr" style="font-size:10px;color:#ff3b30;margin:6px 0;display:none"></div>
+    <button class="sbtn" onclick="doLogin()">Anmelden</button>
+  </div>
+  <div id="authRegPanel" style="display:none">
+    <div class="cf">
+      <div><label class="cl">E-Mail</label><input class="ci" id="regEmail" type="email" placeholder="deine@email.de" autocomplete="email"></div>
+      <div><label class="cl">Passwort</label><input class="ci" id="regPass" type="password" placeholder="Mind. 6 Zeichen" autocomplete="new-password"></div>
+      <div><label class="cl">Name (optional)</label><input class="ci" id="regName" placeholder="z.B. Hendric"></div>
+    </div>
+    <div id="regErr" style="font-size:10px;color:#ff3b30;margin:6px 0;display:none"></div>
+    <button class="sbtn" onclick="doRegister()">Account erstellen</button>
+  </div>
+  <div style="height:env(safe-area-inset-bottom,16px)"></div>
 </div></div></div>
 
 <!-- Modal: Farben -->
@@ -150,12 +169,10 @@
 <div class="mo" id="lbScanM"><div class="mo-bg" onclick="closeSheet('lbScanM')"></div><div class="mc"><div class="mc-head"><div class="shh"></div><div class="mhr"><h2 class="mtl">Erkannte Lernbüros</h2><button class="mx" onclick="closeSheet('lbScanM')">&#10005;</button></div></div><div class="mc-body"><div id="lbScanStatus" style="text-align:center;padding:16px;font-size:12px;color:var(--mm)">Bild wird analysiert...</div><div id="lbScanResults"></div><button class="sbtn" id="lbScanSave" style="display:none" onclick="saveScanResults()">Alle hinzufügen</button></div></div></div>
 
 <script src="/app.js"></script>
-
 <script>
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').catch(() => {});
 }
 </script>
-
 </body>
 </html>
