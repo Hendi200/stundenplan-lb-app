@@ -3,171 +3,175 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Stundenplan + Lernbüros</title>
+  <title>Stundenplan</title>
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#6c63ff">
+  <meta name="theme-color" content="#6c63ff" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f0f2f5" media="(prefers-color-scheme: light)">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
 <body>
 
-<nav>
-  <span class="logo">📅 Stundenplan</span>
-  <div class="nav-tabs">
-    <button class="nav-tab active" data-page="today">Heute</button>
-    <button class="nav-tab" data-page="week">Woche</button>
-    <button class="nav-tab" data-page="lb-manager">Lernbüros</button>
-    <button class="nav-tab" data-page="settings">Einstellungen</button>
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <span class="topbar-logo">Stundenplan</span>
   </div>
-</nav>
+  <div class="kw-nav" id="kw-nav" style="display:none">
+    <button class="kw-btn" id="prev-week">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <span class="kw-label" id="week-label"></span>
+    <button class="kw-btn" id="next-week">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+    </button>
+  </div>
+  <div class="topbar-right">
+    <button class="icon-btn" id="settings-btn" title="Einstellungen">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </button>
+  </div>
+</div>
 
 <main>
 
-  <!-- ── HEUTE ── -->
+  <!-- HEUTE -->
   <div class="page active" id="page-today">
-    <h2 id="today-heading">Heute</h2>
-    <div class="today-slots" id="today-slots">
-      <p style="color:var(--text-muted)">Lade Stundenplan…</p>
+    <div class="today-header">
+      <h2 id="today-heading">Heute</h2>
+      <p id="today-sub"></p>
+    </div>
+    <!-- Bubble bar -->
+    <div class="bubble-bar" id="today-bubbles"></div>
+    <div class="today-list" id="today-list">
+      <p style="color:var(--text-muted);padding:20px 0">Kein Stundenplan geladen. Einstellungen → Demo laden oder Untis verbinden.</p>
     </div>
   </div>
 
-  <!-- ── WOCHE ── -->
+  <!-- WOCHE -->
   <div class="page" id="page-week">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <h2 style="margin:0">Wochenplan</h2>
-      <div style="display:flex;gap:8px">
-        <button class="btn secondary" id="prev-week">◀</button>
-        <span id="week-label" style="align-self:center;font-size:.9rem"></span>
-        <button class="btn secondary" id="next-week">▶</button>
-      </div>
+    <!-- Bubble bar -->
+    <div class="bubble-bar" id="week-bubbles"></div>
+    <div class="tt-wrapper">
+      <div class="tt-grid" id="tt-grid"></div>
     </div>
-    <div class="timetable-grid" id="timetable-grid"></div>
-    <p style="font-size:.78rem;color:var(--text-muted)">
-      <span class="chip accent">Fach</span> Reguläre Stunde &nbsp;
-      <span class="chip" style="border-color:var(--yellow)">LB</span> Lernbüro verfügbar &nbsp;
-      <span class="chip" style="border-color:var(--green)">✓</span> LB gebucht
-    </p>
   </div>
 
-  <!-- ── LERNBÜROS VERWALTEN ── -->
-  <div class="page" id="page-lb-manager">
-    <h2>Lernbüros verwalten</h2>
+  <!-- LERNBÜROS -->
+  <div class="page" id="page-lb">
+    <div class="page-title">Lernbüros</div>
 
-    <div class="card">
-      <h3>📄 PDF hochladen (automatisch auslesen)</h3>
+    <div class="settings-group">
+      <div class="settings-title">PDF importieren</div>
       <div class="upload-zone" id="pdf-upload-zone">
-        <div style="font-size:2.5rem">📂</div>
-        <p>PDF mit Lernbüroplan hierher ziehen oder klicken</p>
-        <p style="font-size:.75rem;margin-top:4px">Unterstützt alle gängigen Lernbüro-PDF-Formate</p>
+        <div class="upload-zone-icon">📄</div>
+        <p>Lernbüroplan als PDF hierher ziehen oder antippen</p>
         <input type="file" accept=".pdf" id="pdf-input" style="display:none">
       </div>
-      <div id="pdf-preview" style="margin-top:12px;display:none">
-        <p style="color:var(--green);font-weight:600" id="pdf-status"></p>
-        <div id="pdf-parsed-preview" style="margin-top:8px"></div>
-        <button class="btn success" style="margin-top:10px" id="pdf-import-btn">✅ Lernbüros importieren</button>
+      <div id="pdf-preview" style="margin-top:10px;display:none">
+        <p id="pdf-status" style="font-size:.85rem;padding:6px 0"></p>
+        <div id="pdf-parsed-preview"></div>
+        <button class="btn success" style="margin-top:10px" id="pdf-import-btn">✅ Importieren</button>
       </div>
     </div>
 
-    <div class="card">
-      <h3>✏️ Manuell bearbeiten</h3>
-      <div class="lb-week-nav">
-        <button class="btn secondary" id="lb-prev-week">◀</button>
-        <span id="lb-week-label" style="font-weight:600"></span>
-        <button class="btn secondary" id="lb-next-week">▶</button>
-        <button class="btn" id="lb-add-btn">+ Eintrag hinzufügen</button>
-      </div>
-      <div id="lb-slots-list"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div class="settings-title" style="margin:0">Einträge</div>
+      <button class="btn" style="width:auto;padding:7px 14px;font-size:.8rem" id="lb-add-btn">+ Hinzufügen</button>
     </div>
+    <div id="lb-entries-list"></div>
   </div>
 
-  <!-- ── EINSTELLUNGEN ── -->
+  <!-- EINSTELLUNGEN -->
   <div class="page" id="page-settings">
-    <h2>Einstellungen</h2>
+    <div class="page-title">Einstellungen</div>
 
-    <div class="card">
-      <h3>🔗 Untis-Integration</h3>
-      <div class="form-group">
-        <label>Untis-Server URL (z.B. https://mese.webuntis.com)</label>
-        <input type="url" id="untis-url" placeholder="https://mese.webuntis.com">
+    <div class="settings-group">
+      <div class="settings-title">Untis</div>
+      <div class="settings-card">
+        <div class="form-group"><label>Server URL</label><input type="url" id="untis-url" placeholder="https://mese.webuntis.com"></div>
+        <div class="form-group"><label>Schule (Kurzname)</label><input type="text" id="untis-school" placeholder="bk-duesseldorf"></div>
+        <div class="form-group"><label>Benutzername</label><input type="text" id="untis-user"></div>
+        <div class="form-group"><label>Passwort</label><input type="password" id="untis-pass"></div>
+        <div class="form-group"><label>Klassen (z.B. EF,Q1,Q2,OS_LB)</label><input type="text" id="untis-classes" placeholder="EF,Q1,Q2,OS_LB"></div>
+        <div class="form-group"><button class="btn" id="untis-connect-btn">🔄 Verbinden</button></div>
+        <div class="form-group" style="border:none"><p id="untis-status" style="font-size:.8rem;color:var(--text-muted)"></p></div>
       </div>
-      <div class="form-group">
-        <label>Schule (Kurzname)</label>
-        <input type="text" id="untis-school" placeholder="z.B. bk-duesseldorf">
-      </div>
-      <div class="form-group">
-        <label>Benutzername</label>
-        <input type="text" id="untis-user" placeholder="Dein Untis-Benutzername">
-      </div>
-      <div class="form-group">
-        <label>Passwort</label>
-        <input type="password" id="untis-pass" placeholder="••••••••">
-      </div>
-      <div class="form-group">
-        <label>Klasse/Jahrgang (kommagetrennt, z.B. EF,Q1,Q2,OS_LB)</label>
-        <input type="text" id="untis-classes" placeholder="EF,Q1,Q2,OS_LB">
-      </div>
-      <button class="btn" id="untis-connect-btn">🔄 Verbinden & Stundenplan laden</button>
-      <p id="untis-status" style="margin-top:10px;font-size:.82rem;color:var(--text-muted)"></p>
     </div>
 
-    <div class="card">
-      <h3>📋 Demo-Daten laden</h3>
-      <p style="color:var(--text-muted);font-size:.85rem;margin-bottom:12px">Lade Beispieldaten zum Testen ohne Untis-Konto.</p>
-      <button class="btn secondary" id="demo-btn">Demo-Stundenplan laden</button>
-    </div>
-
-    <div class="card">
-      <h3>🗑️ Daten zurücksetzen</h3>
-      <button class="btn danger" id="reset-btn">Alle Daten löschen</button>
+    <div class="settings-group">
+      <div class="settings-title">Demo</div>
+      <div class="settings-card">
+        <div class="settings-row">
+          <div><div class="settings-row-label">Demo-Daten laden</div><div class="settings-row-desc">Beispiel-Stundenplan für Tests</div></div>
+          <div class="settings-row-right"><button class="btn secondary" style="width:auto;padding:7px 14px" id="demo-btn">Laden</button></div>
+        </div>
+        <div class="settings-row">
+          <div><div class="settings-row-label">Alles zurücksetzen</div><div class="settings-row-desc">Löscht alle gespeicherten Daten</div></div>
+          <div class="settings-row-right"><button class="btn danger" style="width:auto;padding:7px 14px" id="reset-btn">Reset</button></div>
+        </div>
+      </div>
     </div>
   </div>
 
 </main>
 
-<!-- ── LB AUSWAHL MODAL ── -->
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="bnav-item active" data-page="today">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Heute
+  </button>
+  <button class="bnav-item" data-page="week">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="14" x2="16" y2="14"/></svg>
+    Woche
+  </button>
+  <button class="bnav-item" data-page="lb">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    Lernbüros
+  </button>
+  <button class="bnav-item" data-page="settings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    Einst.
+  </button>
+</nav>
+
+<!-- LB AUSWAHL MODAL -->
 <div class="modal-overlay" id="lb-modal">
   <div class="modal">
-    <button class="close-btn" id="lb-modal-close">✕</button>
-    <h3 id="lb-modal-title">Lernbüro wählen</h3>
-    <p id="lb-modal-slot" style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px"></p>
+    <div class="modal-handle"></div>
+    <h3 id="lb-modal-title"></h3>
+    <p class="modal-sub" id="lb-modal-sub"></p>
     <div id="lb-modal-options"></div>
-    <button class="btn danger" id="lb-modal-cancel-booking" style="margin-top:10px;display:none">❌ Buchung aufheben</button>
+    <button class="modal-cancel-btn" id="lb-modal-cancel" style="display:none">Buchung aufheben</button>
   </div>
 </div>
 
-<!-- ── ADD LB MODAL ── -->
+<!-- ADD LB MODAL -->
 <div class="modal-overlay" id="add-lb-modal">
   <div class="modal">
-    <button class="close-btn" id="add-lb-close">✕</button>
-    <h3>Lernbüro-Eintrag hinzufügen</h3>
-    <div class="form-group">
-      <label>Tag</label>
-      <select id="lb-add-day">
-        <option value="0">Montag</option>
-        <option value="1">Dienstag</option>
-        <option value="2">Mittwoch</option>
-        <option value="3">Donnerstag</option>
-        <option value="4">Freitag</option>
-      </select>
+    <div class="modal-handle"></div>
+    <h3 style="margin-bottom:14px">Lernbüro hinzufügen</h3>
+    <div class="settings-card">
+      <div class="form-group">
+        <label>Tag</label>
+        <select id="lb-add-day">
+          <option value="0">Montag</option><option value="1">Dienstag</option>
+          <option value="2">Mittwoch</option><option value="3">Donnerstag</option>
+          <option value="4">Freitag</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Stunde (1–10)</label><input type="text" id="lb-add-period" placeholder="3"></div>
+      <div class="form-group"><label>Fach-Kürzel</label><input type="text" id="lb-add-subject" placeholder="M"></div>
+      <div class="form-group"><label>Lehrer-Kürzel</label><input type="text" id="lb-add-teacher" placeholder="SSCH"></div>
+      <div class="form-group"><label>Raum</label><input type="text" id="lb-add-room" placeholder="O 2-02"></div>
     </div>
-    <div class="form-group">
-      <label>Stunde (1–10)</label>
-      <input type="text" id="lb-add-period" placeholder="z.B. 3">
-    </div>
-    <div class="form-group">
-      <label>Fach / Lehrer (z.B. SSCH)</label>
-      <input type="text" id="lb-add-teacher" placeholder="z.B. SSCH">
-    </div>
-    <div class="form-group">
-      <label>Raum</label>
-      <input type="text" id="lb-add-room" placeholder="z.B. O 2-02">
-    </div>
-    <div class="form-group">
-      <label>Beschreibung / Fach</label>
-      <input type="text" id="lb-add-subject" placeholder="z.B. Mathematik">
-    </div>
-    <button class="btn" id="lb-add-save">Speichern</button>
+    <button class="btn" style="margin-top:12px" id="lb-add-save">Speichern</button>
+    <button class="modal-cancel-btn" id="add-lb-close" style="display:block">Abbrechen</button>
   </div>
 </div>
 
