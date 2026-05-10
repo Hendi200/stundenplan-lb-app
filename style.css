@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   STUNDENPLAN  —  style.css  v61
+   STUNDENPLAN  —  style.css  v62
    Fluid Material-You Animations · Liquid Glass · Crystal Glass
    ═══════════════════════════════════════════════════════════ */
 
@@ -620,11 +620,10 @@ body.dark.theme-liquid .sbtn { background:oklch(.28 .08 264/.60); }
   border:1.5px solid var(--ib);
   font-size:14px;font-family:'DM Sans',sans-serif;
   background:var(--ig);color:var(--mt);width:100%;
-  text-transform:uppercase;
   transition:border-color .2s var(--e-std), box-shadow .2s var(--e-std);
 }
 .ci:focus { outline:none;border-color:var(--tp);box-shadow:0 0 0 3px oklch(var(--tp) / .12); }
-.ci::placeholder { color:var(--mm);font-size:12px;text-transform:none; }
+.ci::placeholder { color:var(--mm);font-size:12px; }
 .cl { font-size:10px;font-weight:700;color:var(--mm);margin-bottom:4px;display:block;text-transform:uppercase;letter-spacing:.5px; }
 .sbtn {
   width:100%;padding:15px;border-radius:16px;border:none;
